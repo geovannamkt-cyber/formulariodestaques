@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controle Destaques — Japurá Pneus</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Japura brand — mesmas variaveis do original dark, cores remapeadas */
+    --bg: #f0efee;
+    --surface: #ffffff;
+    --surface2: #f7f5f4;
+    --border: #dddbd9;
+    --gold: #3e3f40;
+    --gold-dim: #2a2b2c;
+    --blue: #3a5f8a;
+    --green: #4a7c5f;
+    --purple: #6b5b8a;
+    --orange: #b5442a;
+    --teal: #3a7a6a;
+    --pink: #8a3a5b;
+    --text: #3e3f40;
+    --text-muted: #827f7f;
+    --text-dim: #aaa8a6;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --dark: #3e3f40; --mid: #827f7f; --light: #f0efee;
+    --white: #ffffff; --red: #b5442a; --muted: #827f7f;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+  body::before { content:''; position:fixed; inset:0; background:radial-gradient(ellipse 80% 40% at 20% 0%,rgba(62,63,64,0.05) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 80% 100%,rgba(130,127,127,0.04) 0%,transparent 60%); pointer-events:none; z-index:0; }
+  .app { position:relative; z-index:1; max-width:1400px; margin:0 auto; padding:32px 24px; }
+
+  /* HEADER */
+  header { display:flex; align-items:center; justify-content:space-between; margin-bottom:36px; gap:16px; flex-wrap:wrap; padding-bottom:24px; border-bottom:1px solid var(--border); }
+  .header-brand { display:flex; align-items:center; gap:14px; }
+  .header-brand svg { width:40px; height:33px; flex-shrink:0; }
+  .header-brand-sep { width:1px; height:36px; background:var(--border); }
+  .header-brand-text h1 { font-family:'Arial Black','Arial',sans-serif; font-weight:900; font-size:clamp(16px,2.5vw,22px); letter-spacing:-.3px; text-transform:uppercase; color:var(--dark); line-height:1.1; }
+  .header-brand-text p { font-family:'Inter',sans-serif; font-size:12px; color:var(--muted); margin-top:2px; font-weight:400; }
+  .header-right { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+
+  .btn { display:inline-flex; align-items:center; gap:6px; padding:9px 18px; border-radius:var(--radius-sm); font-family:'Inter',sans-serif; font-size:13px; font-weight:500; cursor:pointer; border:none; transition:all .2s; }
+  .btn-dark { background:var(--dark); color:var(--white); }
+  .btn-dark:hover { background:#2a2b2c; transform:translateY(-1px); box-shadow:0 4px 12px rgba(62,63,64,0.2); }
+  .btn-outline { background:transparent; color:var(--muted); border:1px solid var(--border); }
+  .btn-outline:hover { border-color:var(--dark); color:var(--dark); }
+
+  /* STATS */
+  .stats-bar { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:16px; margin-bottom:28px; }
+  .stat-card { background:var(--white); border:1px solid var(--border); border-radius:var(--radius); padding:20px; position:relative; overflow:hidden; transition:border-color .2s,box-shadow .2s; }
+  .stat-card:hover { border-color:var(--mid); box-shadow:0 2px 12px rgba(62,63,64,0.08); }
+  .stat-card::after { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--accent,var(--dark)); border-radius:2px 2px 0 0; }
+  .stat-label { font-family:'Inter',sans-serif; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.9px; color:var(--muted); margin-bottom:8px; }
+  .stat-val { font-family:'Arial Black','Arial',sans-serif; font-weight:900; font-size:30px; line-height:1; color:var(--accent,var(--dark)); }
+  .stat-sub { font-family:'Inter',sans-serif; font-size:11px; color:var(--muted); margin-top:4px; }
+
+  /* LAYOUT */
+  .grid-main { display:grid; grid-template-columns:270px 1fr; gap:20px; align-items:start; }
+  @media(max-width:900px){.grid-main{grid-template-columns:1fr;}}
+  .sidebar { display:flex; flex-direction:column; gap:16px; }
+
+  .card { background:var(--white); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; box-shadow:0 1px 4px rgba(62,63,64,0.04); }
+  .card-header { padding:14px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .card-header h3 { font-family:'Inter',sans-serif; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--muted); }
+
+  /* MONTH LIST */
+  .month-list { padding:8px; }
+  .month-item { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:var(--radius-sm); cursor:pointer; transition:all .15s; gap:8px; border:1px solid transparent; }
+  .month-item:hover { background:var(--surface2); }
+  .month-item.active { background:rgba(62,63,64,0.06); border-color:rgba(62,63,64,0.2); }
+  .month-item-left { display:flex; align-items:center; gap:10px; }
+  .month-dot { width:7px; height:7px; border-radius:50%; background:var(--border); flex-shrink:0; transition:background .2s; }
+  .month-item.has-data .month-dot { background:var(--green); }
+  .month-item.is-current .month-dot { background:var(--dark); box-shadow:0 0 5px rgba(62,63,64,0.4); }
+  .month-name { font-family:'Inter',sans-serif; font-size:13px; font-weight:500; color:var(--text); }
+  .month-date { font-family:'Inter',sans-serif; font-size:10px; color:var(--muted); }
+  .month-count { font-family:'Inter',sans-serif; font-size:11px; font-weight:600; background:var(--surface2); color:var(--muted); padding:2px 7px; border-radius:20px; min-width:24px; text-align:center; }
+  .month-item.active .month-count { background:var(--dark); color:var(--white); }
+
+  /* MAIN */
+  .main-content { display:flex; flex-direction:column; gap:20px; }
+  .section-head { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  .section-title { font-family:'Arial Black','Arial',sans-serif; font-weight:900; font-size:18px; text-transform:uppercase; letter-spacing:-.3px; color:var(--dark); }
+  .section-title .month-label { color:var(--mid); }
+  .update-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(74,124,95,0.08); border:1px solid rgba(74,124,95,0.25); color:var(--green); font-family:'Inter',sans-serif; font-size:11px; font-weight:500; padding:4px 10px; border-radius:20px; }
+  .badge-dot { width:6px; height:6px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+  /* CARDS */
+  .highlights-area { display:flex; flex-direction:column; gap:10px; }
+  .highlight-card { background:var(--white); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; display:grid; grid-template-columns:46px 1fr auto; gap:16px; align-items:center; transition:all .2s; position:relative; overflow:hidden; box-shadow:0 1px 4px rgba(62,63,64,0.04); }
+  .highlight-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--card-color,var(--mid)); border-radius:3px 0 0 3px; }
+  .highlight-card:hover { border-color:var(--mid); transform:translateX(2px); box-shadow:0 3px 12px rgba(62,63,64,0.1); }
+  .avatar { width:46px; height:46px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-family:'Arial Black','Arial',sans-serif; font-size:16px; font-weight:900; flex-shrink:0; }
+  .card-info { min-width:0; }
+  .card-name { font-family:'Arial Black','Arial',sans-serif; font-weight:900; font-size:14px; margin-bottom:5px; color:var(--dark); text-transform:uppercase; letter-spacing:-.2px; }
+  .card-meta { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+  .chip { display:inline-flex; align-items:center; gap:4px; font-family:'Inter',sans-serif; font-size:11px; font-weight:500; padding:2px 8px; border-radius:20px; background:var(--surface2); color:var(--muted); border:1px solid var(--border); }
+  .chip.sector { color:var(--blue); border-color:rgba(58,95,138,.2); background:rgba(58,95,138,.06); }
+  .chip.indicated { color:var(--purple); border-color:rgba(107,91,138,.2); background:rgba(107,91,138,.06); }
+  .card-reason { font-family:'Inter',sans-serif; font-size:12px; color:var(--muted); margin-top:6px; font-style:italic; line-height:1.5; }
+  .card-actions { display:flex; gap:6px; }
+  .icon-btn { width:32px; height:32px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--muted); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:13px; transition:all .15s; }
+  .icon-btn.danger:hover { border-color:var(--red); color:var(--red); background:rgba(181,68,42,0.06); }
+
+  /* SECTOR CHART */
+  .sector-grid { display:flex; flex-direction:column; gap:10px; padding:16px; }
+  .sector-row { display:flex; flex-direction:column; gap:4px; }
+  .sector-row-head { display:flex; justify-content:space-between; font-family:'Inter',sans-serif; font-size:12px; }
+  .sector-row-name { font-weight:500; color:var(--text); }
+  .sector-row-count { color:var(--muted); }
+  .sector-bar-bg { height:5px; background:var(--surface2); border-radius:3px; overflow:hidden; }
+  .sector-bar { height:100%; background:var(--mid); border-radius:3px; transition:width .6s cubic-bezier(.4,0,.2,1); }
+
+  /* TIMELINE */
+  .timeline { display:grid; grid-template-columns:repeat(12,1fr); gap:4px; padding:16px; }
+  .tl-month { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; }
+  .tl-bar-wrap { width:100%; height:44px; background:var(--surface2); border-radius:4px; display:flex; align-items:flex-end; overflow:hidden; border:1px solid var(--border); transition:border-color .2s; }
+  .tl-month:hover .tl-bar-wrap,.tl-month.active .tl-bar-wrap { border-color:var(--dark); }
+  .tl-bar { width:100%; background:var(--mid); opacity:.7; transition:height .5s cubic-bezier(.4,0,.2,1); border-radius:2px 2px 0 0; }
+  .tl-month.active .tl-bar { opacity:1; background:var(--dark); }
+  .tl-label { font-family:'Inter',sans-serif; font-size:9px; color:var(--muted); text-align:center; font-weight:600; letter-spacing:.5px; }
+  .tl-count { font-family:'Inter',sans-serif; font-size:10px; color:var(--dark); font-weight:700; }
+
+  .empty-state { background:var(--white); border:1px dashed var(--border); border-radius:var(--radius); padding:56px 30px; text-align:center; }
+  .empty-icon { font-size:36px; margin-bottom:12px; }
+  .empty-title { font-family:'Arial Black','Arial',sans-serif; font-weight:900; font-size:14px; text-transform:uppercase; letter-spacing:-.2px; margin-bottom:6px; color:var(--dark); }
+  .empty-sub { font-family:'Inter',sans-serif; font-size:13px; color:var(--muted); }
+
+  .loading { display:flex; align-items:center; justify-content:center; padding:40px; color:var(--muted); gap:10px; font-family:'Inter',sans-serif; font-size:14px; }
+  .spinner { width:18px; height:18px; border:2px solid var(--border); border-top-color:var(--dark); border-radius:50%; animation:spin .7s linear infinite; }
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .live-badge { display:inline-flex; align-items:center; gap:5px; font-family:'Inter',sans-serif; font-size:11px; color:var(--green); font-weight:500; }
+  .live-dot { width:6px; height:6px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
+
+  .toast { position:fixed; bottom:24px; right:24px; background:var(--white); border:1px solid var(--border); color:var(--dark); padding:12px 20px; border-radius:var(--radius-sm); font-family:'Inter',sans-serif; font-size:13px; font-weight:500; z-index:200; transform:translateY(60px); opacity:0; transition:all .3s; box-shadow:0 4px 16px rgba(62,63,64,0.12); }
+  .toast.show { transform:translateY(0); opacity:1; }
+
+  ::-webkit-scrollbar{width:5px}
+  ::-webkit-scrollbar-track{background:var(--light)}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+  @media(max-width:600px){
+    .stats-bar{grid-template-columns:repeat(2,1fr)}
+    .highlight-card{grid-template-columns:40px 1fr}
+    .card-actions{display:none}
+    .timeline{grid-template-columns:repeat(6,1fr)}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+<!-- logo already there -->
+    <div class="header-brand">
+      <svg viewBox="0 0 518 432" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M18.893 63.3336C17.1912 64.042 14.213 66.4506 12.0857 68.7176C10.1003 70.9846 6.69668 77.6438 4.71124 83.4529C1.44945 92.5208 0.740363 97.0548 0.173095 114.624C-0.252357 130.634 0.0312774 137.577 1.8749 145.795C3.15126 151.604 5.70396 159.255 7.40577 162.655C9.10758 166.056 12.3694 170.165 14.4966 171.865C18.3257 174.699 20.4529 174.84 47.1146 175.124C62.8563 175.265 82.1434 176.115 89.9434 176.966C97.7433 177.957 111.216 180.224 119.725 182.066C128.376 183.908 140.43 187.167 146.67 189.292C152.91 191.276 164.114 195.81 171.488 199.21C178.863 202.611 191.059 209.553 198.434 214.512C205.808 219.471 218.855 229.673 227.222 237.04C235.59 244.55 243.248 250.5 244.24 250.217C245.233 249.934 247.36 246.958 249.062 243.416C250.764 240.016 255.728 229.814 259.84 220.888C264.095 211.962 270.902 200.06 274.873 194.676C278.844 189.151 283.949 182.491 286.218 179.799C288.487 177.107 290.757 173.565 291.182 172.007C291.749 170.165 290.757 167.048 288.204 163.222C286.077 159.963 275.298 146.645 264.237 133.468C253.175 120.433 242.539 108.815 240.411 107.823C238.426 106.973 235.448 106.406 233.888 106.831C232.328 107.256 231.051 108.673 230.91 109.948C230.768 111.365 230.768 134.602 230.91 161.663C231.051 188.867 230.768 210.97 230.342 210.97C229.917 210.97 223.11 202.894 215.168 192.834C207.226 182.916 195.881 169.456 190.066 162.797C184.394 156.138 172.481 143.528 163.83 134.743C155.179 125.817 143.267 114.624 137.452 109.806C131.638 104.847 121.994 97.7632 116.18 93.9377C110.365 89.9705 101.998 84.8698 97.7433 82.4611C93.4888 80.0525 85.1216 76.2269 79.3071 73.6766C73.4926 71.2679 63.5654 68.0092 57.3254 66.4506C51.0855 64.7504 40.591 63.1919 33.9256 62.7668C27.2602 62.4834 20.5948 62.7668 18.893 63.3336ZM15.9148 247.667C13.0785 249.509 9.81666 253.618 7.6894 258.152C5.70396 262.119 3.29307 270.053 2.01672 275.437C0.882181 281.105 0.0312773 292.723 0.0312773 302.357C0.0312773 312.275 0.882181 323.469 2.15854 329.278C3.29307 334.804 5.9876 342.313 8.11486 345.997C10.2421 349.822 13.2203 353.648 14.7803 354.781C16.7657 356.056 26.6929 356.765 49.5255 357.332C67.1108 357.898 88.5252 359.173 97.0342 360.307C105.685 361.582 119.016 363.991 126.816 365.974C134.616 367.958 145.819 371.217 151.634 373.2C157.448 375.326 168.085 380.001 175.034 383.402C182.125 386.944 191.343 392.045 195.597 394.878C199.852 397.57 206.943 402.529 211.197 405.788C215.452 409.047 223.961 416.273 230.059 421.94C236.015 427.466 242.255 432 243.815 432C245.517 432 247.502 430.441 248.637 428.174C249.771 425.908 252.182 420.098 254.168 414.998C256.011 409.897 260.691 400.121 264.52 393.178C268.349 386.236 275.866 375.326 281.113 368.808C287.069 361.299 290.757 355.348 291.04 352.939C291.182 349.964 289.764 346.847 285.793 341.888C282.673 338.062 272.037 325.452 262.393 313.834C252.608 302.216 243.248 291.873 241.688 290.739C240.128 289.747 237.433 288.897 235.731 288.897C233.888 288.897 232.044 289.747 231.477 290.739C230.91 291.589 230.626 315.251 230.768 343.163C230.91 370.933 230.768 393.745 230.342 393.745C229.917 393.745 223.535 385.952 215.877 376.459C208.361 366.825 196.59 352.656 189.924 344.863C183.117 337.071 169.361 322.619 159.292 312.701C149.223 302.783 137.452 291.873 133.198 288.472C128.943 285.072 119.725 278.554 112.634 273.879C105.685 269.345 94.0561 262.969 86.8234 259.568C79.5907 256.168 68.1035 251.776 61.2963 249.792C53.0709 247.383 43.9946 245.967 34.6347 245.4C22.0129 244.833 20.0275 245.116 15.9148 247.667ZM476.253 2.83371C468.17 4.25057 454.697 7.79272 446.472 10.6264C438.388 13.4602 426.192 18.5608 419.526 21.9613C413.003 25.2201 401.799 31.7376 394.708 36.4132C387.759 40.9472 376.272 49.59 369.181 55.3991C362.232 61.3499 351.029 71.8347 344.363 78.7773C337.698 85.7199 328.764 95.4962 324.367 100.455C320.113 105.556 311.745 116.041 305.931 123.833C299.975 131.626 294.444 139.56 293.593 141.261C292.316 143.811 292.458 145.37 294.018 149.053C295.153 151.604 297.989 155.571 300.4 157.838L304.655 162.089C322.807 150.895 331.883 145.653 336.563 143.386C341.243 140.977 351.454 136.868 359.254 134.176C367.054 131.343 379.25 127.801 386.199 126.1C393.29 124.4 409.599 121.425 422.363 119.583C435.268 117.599 457.959 114.907 472.708 113.49C492.421 111.648 500.788 110.373 503.624 108.673C505.751 107.256 508.729 103.431 510.289 100.172C511.708 96.9131 514.119 88.4119 515.395 81.3276C517.239 71.693 517.664 64.3253 516.955 50.8652C516.529 41.2306 515.111 28.7622 513.835 23.2365C512.559 17.8524 510.289 11.0515 508.729 8.07609C507.311 5.10069 504.759 2.12528 503.199 1.27517C501.639 0.566739 498.377 0 495.824 0C493.271 0.141686 484.479 1.27517 476.253 2.83371ZM476.253 185.042C469.588 186.175 457.533 189.292 449.308 192.126C441.083 194.818 428.745 199.777 421.654 203.177C414.705 206.578 403.218 213.237 396.127 217.771C389.178 222.447 378.541 230.098 372.727 234.915C366.912 239.591 357.978 247.525 352.872 252.484C347.767 257.443 337.982 267.786 331.033 275.579C324.084 283.372 313.873 295.84 308.2 303.208C302.527 310.575 296.571 318.935 294.869 321.627C293.026 324.744 292.175 327.578 292.884 329.419C293.309 330.978 295.578 334.662 297.847 337.496C300.116 340.613 303.095 342.88 304.655 342.88C306.215 342.88 311.462 340.329 316.425 337.07C321.247 333.953 331.033 328.569 337.982 325.169C345.072 321.91 356.843 317.234 364.218 314.826C371.592 312.417 383.505 309.158 390.454 307.6C397.545 306.041 414.421 303.208 428.035 301.224C441.65 299.24 463.773 296.69 476.962 295.415C490.293 294.14 502.348 292.298 503.908 291.306C505.468 290.314 508.162 286.772 509.864 283.23C511.566 279.829 514.119 270.903 515.395 263.536C517.097 253.476 517.522 245.683 516.955 232.365C516.388 221.597 514.969 210.262 513.126 203.319C511.566 197.085 508.588 189.859 506.744 187.309C503.482 183.2 502.631 182.775 495.824 182.916C491.711 183.058 482.919 183.908 476.253 185.042Z" fill="#3e3f40"/>
+      </svg>
+      <div class="header-brand-sep"></div>
+      <div class="header-brand-text">
+        <h1>Japurá Pneus</h1>
+        <p id="date-label">Carregando...</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="live-badge"><span class="live-dot"></span>Tempo real</span>
+      <button class="btn btn-outline" onclick="exportCSV()">&#8595; Exportar CSV</button>
+      <button class="btn btn-dark" onclick="location.reload()">&#8635; Atualizar</button>
+    </div>
+  </header>
+
+  <div class="stats-bar">
+    <div class="stat-card" style="--accent:var(--dark)"><div class="stat-label">Total Destaques</div><div class="stat-val" id="stat-total">—</div><div class="stat-sub">em 2026</div></div>
+    <div class="stat-card" style="--accent:var(--green)"><div class="stat-label">Meses Registrados</div><div class="stat-val" id="stat-months">—</div><div class="stat-sub">de 12 meses</div></div>
+    <div class="stat-card" style="--accent:var(--blue)"><div class="stat-label">Setores Ativos</div><div class="stat-val" id="stat-sectors">—</div><div class="stat-sub">diferentes</div></div>
+    <div class="stat-card" style="--accent:var(--mid)"><div class="stat-label">Proxima Quinta</div><div class="stat-val" id="stat-days" style="font-size:22px;padding-top:4px">—</div><div class="stat-sub" id="stat-next-label">dias</div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-header"><h3>Visao Anual — Destaques por Mes</h3></div>
+    <div class="timeline" id="timeline"></div>
+  </div>
+
+  <div class="grid-main">
+    <div class="sidebar">
+      <div class="card">
+        <div class="card-header"><h3>Meses / Datas</h3></div>
+        <div class="month-list" id="month-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Por Setor</h3></div>
+        <div class="sector-grid" id="sector-chart"></div>
+      </div>
+    </div>
+    <div class="main-content">
+      <div class="section-head">
+        <div class="section-title">Destaques de <span class="month-label" id="selected-label">—</span></div>
+        <div class="update-badge"><div class="badge-dot"></div><span id="badge-date">—</span></div>
+      </div>
+      <div class="highlights-area" id="highlights-area">
+        <div class="loading"><div class="spinner"></div>Carregando dados...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SB_URL='https://obmczqorijdcfkbnzvyt.supabase.co', SB_KEY='sb_publishable_amkuYtweEA4m-CszT5S-GA_8QOfjb4w';
+const MONTHS=["Janeiro","Fevereiro","Marco","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const THURSDAYS=["29/01/2026","26/02/2026","26/03/2026","30/04/2026","28/05/2026","25/06/2026","30/07/2026","27/08/2026","24/09/2026","29/10/2026","26/11/2026","31/12/2026"];
+const COLORS=["#3e3f40","#827f7f","#4a7c5f","#3a5f8a","#6b5b8a","#8a5b3a","#3a7a8a","#6b3a5b","#5b6b3a","#8a3a4a","#3a5b6b","#6b8a3a"];
+
+let allData=[], selectedMonth=new Date().getMonth();
+
+function colorFor(s){let h=0;for(let c of(s||''))h=(h*31+c.charCodeAt(0))&0xffffffff;return COLORS[Math.abs(h)%COLORS.length];}
+function initials(n){return(n||'?').split(' ').slice(0,2).map(x=>x[0]).join('').toUpperCase();}
+function daysUntil(ds){const[d,m,y]=ds.split('/').map(Number);const t=new Date(y,m-1,d);const now=new Date();now.setHours(0,0,0,0);return Math.round((t-now)/86400000);}
+
+async function fetchData(){
+  try{
+    const res=await fetch(SB_URL+'/rest/v1/destaques?select=*&order=criado_em.desc',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    if(!res.ok)throw new Error();
+    allData=await res.json(); renderAll();
+  }catch(e){document.getElementById('highlights-area').innerHTML='<div class="empty-state"><div class="empty-icon">&#9888;</div><div class="empty-title">Erro ao carregar</div><div class="empty-sub">Verifique sua conexao</div></div>';}
+}
+
+async function deleteRecord(id,name){
+  if(!confirm('Remover "'+name+'"?'))return;
+  try{
+    const res=await fetch(SB_URL+'/rest/v1/destaques?id=eq.'+id,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    if(!res.ok)throw new Error();
+    allData=allData.filter(x=>x.id!==id); renderAll(); showToast(name+' removido');
+  }catch(e){showToast('Erro ao remover',true);}
+}
+
+function renderStats(){
+  document.getElementById('stat-total').textContent=allData.length;
+  document.getElementById('stat-months').textContent=new Set(allData.map(x=>x.mes)).size;
+  document.getElementById('stat-sectors').textContent=new Set(allData.map(x=>(x.setor||'').trim().toLowerCase()).filter(Boolean)).size;
+  let min=Infinity,lbl='';
+  THURSDAYS.forEach((t,i)=>{const d=daysUntil(t);if(d>=0&&d<min){min=d;lbl=MONTHS[i];}});
+  if(min===Infinity){document.getElementById('stat-days').textContent='OK';document.getElementById('stat-next-label').textContent='Ano concluido';}
+  else if(min===0){document.getElementById('stat-days').textContent='Hoje!';document.getElementById('stat-next-label').textContent=lbl;}
+  else{document.getElementById('stat-days').textContent=min;document.getElementById('stat-next-label').textContent='dias — '+lbl;}
+}
+
+function renderMonthList(){
+  const el=document.getElementById('month-list'), cur=new Date().getMonth();
+  el.innerHTML=MONTHS.map((m,i)=>{
+    const count=allData.filter(x=>x.mes===i).length;
+    return '<div class="month-item'+(i===selectedMonth?' active':'')+(i===cur?' is-current':'')+(count>0?' has-data':'')+'" onclick="selectedMonth='+i+';renderAll()"><div class="month-item-left"><div class="month-dot"></div><div><div class="month-name">'+m+'</div><div class="month-date">'+THURSDAYS[i]+'</div></div></div><div class="month-count">'+count+'</div></div>';
+  }).join('');
+}
+
+function renderSectors(){
+  const el=document.getElementById('sector-chart'), map={};
+  allData.forEach(x=>{const s=(x.setor||'Sem setor').trim();map[s]=(map[s]||0)+1;});
+  const sorted=Object.entries(map).sort((a,b)=>b[1]-a[1]);
+  if(!sorted.length){el.innerHTML='<div style="padding:16px;font-size:12px;font-family:Inter,sans-serif;color:var(--muted);text-align:center">Nenhum dado ainda</div>';return;}
+  const max=sorted[0][1];
+  el.innerHTML=sorted.map(([n,c])=>'<div class="sector-row"><div class="sector-row-head"><span class="sector-row-name">'+n+'</span><span class="sector-row-count">'+c+'</span></div><div class="sector-bar-bg"><div class="sector-bar" style="width:'+((c/max)*100)+'%;background:'+colorFor(n)+'"></div></div></div>').join('');
+}
+
+function renderTimeline(){
+  const el=document.getElementById('timeline');
+  const counts=MONTHS.map((_,i)=>allData.filter(x=>x.mes===i).length);
+  const max=Math.max(...counts,1);
+  const abbr=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+  el.innerHTML=MONTHS.map((_,i)=>'<div class="tl-month'+(i===selectedMonth?' active':'')+'" onclick="selectedMonth='+i+';renderAll()"><div class="tl-bar-wrap"><div class="tl-bar" style="height:'+(counts[i]?Math.max(8,(counts[i]/max)*100)+'%':'0%')+'"></div></div><div class="tl-label">'+abbr[i]+'</div><div class="tl-count">'+(counts[i]||'')+'</div></div>').join('');
+}
+
+function renderHighlights(){
+  document.getElementById('selected-label').textContent=MONTHS[selectedMonth];
+  document.getElementById('badge-date').textContent='Atualiza em '+THURSDAYS[selectedMonth];
+  const area=document.getElementById('highlights-area');
+  const list=allData.filter(x=>x.mes===selectedMonth);
+  if(!list.length){area.innerHTML='<div class="empty-state"><div class="empty-icon">&#127775;</div><div class="empty-title">Nenhum destaque em '+MONTHS[selectedMonth]+'</div><div class="empty-sub">Aguardando indicacoes pelo formulario</div></div>';return;}
+  area.innerHTML=list.map(h=>{
+    const color=colorFor(h.nome), date=h.criado_em?new Date(h.criado_em).toLocaleDateString('pt-BR'):'';
+    return '<div class="highlight-card" style="--card-color:'+color+'"><div class="avatar" style="background:'+color+'18;color:'+color+'">'+initials(h.nome)+'</div><div class="card-info"><div class="card-name">'+h.nome+'</div><div class="card-meta">'+(h.setor?'<span class="chip sector">&#127970; '+h.setor+'</span>':'')+(h.indicado_por?'<span class="chip indicated">&#128100; '+h.indicado_por+'</span>':'')+(date?'<span class="chip">'+date+'</span>':'')+'</div>'+(h.motivo?'<div class="card-reason">"'+h.motivo+'"</div>':'')+'</div><div class="card-actions"><button class="icon-btn danger" onclick="deleteRecord(\''+h.id+'\',\''+h.nome+'\')">&#10005;</button></div></div>';
+  }).join('');
+}
+
+function renderAll(){renderStats();renderMonthList();renderSectors();renderTimeline();renderHighlights();}
+
+function exportCSV(){
+  const rows=[['Mes','Nome','Setor','Motivo','Indicado Por','Data']];
+  allData.forEach(h=>rows.push([MONTHS[h.mes],h.nome,h.setor,h.motivo,h.indicado_por,h.criado_em?new Date(h.criado_em).toLocaleDateString('pt-BR'):'']));
+  const csv=rows.map(r=>r.map(c=>'"'+(c||'').replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv); a.download='destaques_japura_2026.csv'; a.click();
+  showToast('CSV exportado!');
+}
+
+function showToast(msg,warn){
+  const t=document.getElementById('toast'); t.textContent=msg;
+  t.style.borderColor=warn?'var(--red)':'var(--green)'; t.style.color=warn?'var(--red)':'var(--green)';
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+document.getElementById('date-label').textContent='Destaques 2026 — '+new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
+fetchData();
+setInterval(fetchData,30000);
+</script>
+</body>
+</html>
